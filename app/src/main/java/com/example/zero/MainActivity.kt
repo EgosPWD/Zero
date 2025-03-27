@@ -31,18 +31,21 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.example.zero.*
+import postgresql
 
 class MainActivity : ComponentActivity() {
     private lateinit var auth: FirebaseAuth
+    private lateinit var pdo: postgresql
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Inicializar Firebase primero
         FirebaseApp.initializeApp(this)
 
-        // Después de inicializar Firebase, podemos obtener la instancia de auth
         auth = Firebase.auth
+        pdo = postgresql()
 
         setContent {
             MaterialTheme {
@@ -58,10 +61,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        // Verificar si el usuario ya está autenticado
         val currentUser = auth.currentUser
         if (currentUser != null) {
-            // Usuario ya autenticado
             Toast.makeText(this, "Usuario ya autenticado: ${currentUser.email}", Toast.LENGTH_SHORT).show()
         }
     }
@@ -89,7 +90,6 @@ fun AuthScreen(auth: FirebaseAuth, activity: ComponentActivity) {
         )
 
         if (!isLoggedIn) {
-            // Campos de entrada
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -117,7 +117,6 @@ fun AuthScreen(auth: FirebaseAuth, activity: ComponentActivity) {
                 )
             }
 
-            // Botones de inicio de sesión y registro
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -183,7 +182,6 @@ fun AuthScreen(auth: FirebaseAuth, activity: ComponentActivity) {
                 )
             }
         } else {
-            // Pantalla para usuario autenticado
             Text(
                 text = "Has iniciado sesión correctamente",
                 modifier = Modifier.padding(bottom = 16.dp)

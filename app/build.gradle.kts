@@ -42,6 +42,8 @@ android {
 }
 
 dependencies {
+    //postgresql
+    implementation("org.postgresql:postgresql:42.6.0")
     //Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.11.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
