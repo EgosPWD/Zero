@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.plantsocial.app.views.navigation.BottomNavItem
+import com.example.zero.views.navigation.BottomNavItem
 
 @Composable
 fun BottomNavigationBar(navController: NavController) {
@@ -29,6 +29,15 @@ fun BottomNavigationBar(navController: NavController) {
                 label = { Text(item.label) },
                 selected = currentRoute == item.route,
                 onClick = {
+                    when(item.route){
+                        "camera" -> {
+
+                        }
+                    }
+
+
+
+
                     navController.navigate(item.route) {
                         popUpTo(navController.graph.startDestinationId) { saveState = true }
                         launchSingleTop = true
@@ -37,5 +46,6 @@ fun BottomNavigationBar(navController: NavController) {
                 }
             )
         }
+
     }
 }

@@ -74,4 +74,15 @@ dependencies {
     // Debugging
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Dependencias para manejar la cámara
+    implementation("androidx.activity:activity-compose:1.6.1")
+    implementation("androidx.activity:activity-ktx:1.6.1")
+
+    // Dependencias para manejar permisos
+    implementation("androidx.core:core-ktx:1.10.0")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.3")
+
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
 }
