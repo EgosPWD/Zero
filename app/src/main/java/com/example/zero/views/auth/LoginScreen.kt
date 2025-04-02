@@ -14,9 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel = viewModel()) {
+fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewModel()) {
     val email by viewModel.email.collectAsState()
     val password by viewModel.password.collectAsState()
     val loginState by viewModel.loginState.collectAsState()
@@ -51,7 +52,13 @@ fun LoginScreen(viewModel: LoginViewModel = viewModel()) {
                 text = (loginState as LoginState.Error).message,
                 color = MaterialTheme.colorScheme.error
             )
-            is LoginState.Success -> Text("Bienvenido, ${(loginState as LoginState.Success).user.email}")
+            is LoginState.Success -> {
+                Text("Bienvenido, ${(loginState as LoginState.Success).user.email}")
+                // Navegar a la pantalla de cámara
+                LaunchedEffect(Unit) {
+                    navController.navigate("camera_screen")
+                }
+            }
             else -> {}
         }
 
@@ -68,3 +75,4 @@ fun LoginScreen(viewModel: LoginViewModel = viewModel()) {
         }
     }
 }
+

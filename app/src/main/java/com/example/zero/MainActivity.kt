@@ -31,21 +31,19 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            ZeroTheme{
-             CameraScreen()
+            ZeroTheme {
+                val navController = rememberNavController()
+                NavHost(navController, startDestination = "login_screen") {
+                    composable("login_screen") {
+                        LoginScreen(navController)
+                    }
+                    composable("camera_screen") {
+                        CameraScreen()
+                    }
+                }
             }
         }
     }
-}
 
 
-
-
-
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun DefaultPreview() {
-    ZeroTheme {
-    }
 }
