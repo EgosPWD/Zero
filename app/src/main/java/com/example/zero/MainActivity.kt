@@ -22,10 +22,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.zero.ui.theme.ZeroTheme
 import com.example.zero.views.auth.LoginScreen
-import com.example.zero.views.auth.LoginViewModel
-import com.example.zero.views.components.BottomNavigationBar
-import com.example.zero.views.navigation.BottomNavItem
-import com.example.zero.views.camera.CameraScreen
+
+import com.example.zero.views.plant.MyPlantsScreen
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,11 +33,16 @@ class MainActivity : ComponentActivity() {
             ZeroTheme {
                 val navController = rememberNavController()
                 NavHost(navController, startDestination = "login_screen") {
-                    composable("login_screen") {
+                   composable("login_screen") {
                         LoginScreen(navController)
                     }
+                    /*
                     composable("camera_screen") {
                         CameraScreen()
+                    }
+                    **/
+                    composable("MyPlantsScreen"){
+                        MyPlantsScreen()
                     }
                 }
             }

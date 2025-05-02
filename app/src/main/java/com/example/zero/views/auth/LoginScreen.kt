@@ -56,7 +56,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
                 Text("Bienvenido, ${(loginState as LoginState.Success).user.email}")
                 // Navegar a la pantalla de cámara
                 LaunchedEffect(Unit) {
-                    navController.navigate("camera_screen")
+                    navController.navigate("MyPlantsScreen")
                 }
             }
             else -> {}
