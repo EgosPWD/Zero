@@ -1,8 +1,7 @@
 package com.example.zero.views.auth
 
-
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -15,6 +14,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.zero.views.auth.LoginViewModel.LoginState
+import com.google.firebase.auth.FirebaseAuth
+
 
 @Composable
 fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewModel()) {
@@ -22,6 +24,18 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
     val password by viewModel.password.collectAsState()
     val loginState by viewModel.loginState.collectAsState()
 
+    // Comprobamos si el usuario ya está logueado
+    val firebaseUser = FirebaseAuth.getInstance().currentUser
+    LaunchedEffect(firebaseUser) {
+        if (firebaseUser != null) {
+            // Si ya está autenticado, redirigimos a la pantalla de plantas
+            navController.navigate("my_plants") {
+                popUpTo("login_screen") { inclusive = true }
+            }
+        }
+    }
+
+    // Si el usuario no está autenticado, mostramos el formulario de login
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.Center,
@@ -54,9 +68,11 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
             )
             is LoginState.Success -> {
                 Text("Bienvenido, ${(loginState as LoginState.Success).user.email}")
-                // Navegar a la pantalla de cámara
+                // Navegar a la pantalla de plantas cuando el login es exitoso
                 LaunchedEffect(Unit) {
-                    navController.navigate("MyPlantsScreen")
+                    navController.navigate("my_plants") {
+                        popUpTo("login_screen") { inclusive = true }
+                    }
                 }
             }
             else -> {}
@@ -75,4 +91,3 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
         }
     }
 }
-

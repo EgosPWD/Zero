@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -62,23 +63,49 @@ class LoginViewModel: ViewModel() {
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
             try {
-                val result = auth.createUserWithEmailAndPassword(_email.value, _password.value).await()
+                val result =
+                    auth.createUserWithEmailAndPassword(_email.value, _password.value).await()
                 result.user?.let { firebaseUser ->
+                    // 1. Crear documento del usuario en Firestore
+                    val db = Firebase.firestore
+                    val userId = firebaseUser.uid
+
+                    val userData = mapOf(
+                        "email" to (firebaseUser.email ?: ""),
+                        "createdAt" to System.currentTimeMillis()
+                    )
+
+                    db.collection("users").document(userId).set(userData).await()
+
+
+                    val samplePlant = mapOf(
+                        "name" to "Monstera Deliciosa",
+                        "description" to "Planta tropical con hojas grandes y divididas",
+                        "imageUrl" to "https://picsum.photos/id/13/2500/1667",
+                        "addedAt" to System.currentTimeMillis()
+                    )
+
+                    db.collection("users").document(userId)
+                        .collection("plants")
+                        .add(samplePlant).await()
+
                     _loginState.value = LoginState.Success(
                         User(
-                            id = firebaseUser.uid,
+                            id = userId,
                             email = firebaseUser.email ?: "",
                             username = firebaseUser.displayName ?: ""
                         )
-                )}
+                    )
+                } ?: run {
+                    _loginState.value = LoginState.Error("Registro fallido")
+                }
             } catch (e: Exception) {
                 _loginState.value = LoginState.Error(e.message ?: "Error de autenticación")
             }
         }
     }
-}
 
-//Es una data class en Kotlin, usada para representar un objeto de datos inmutable (como un usuario).
+    //Es una data class en Kotlin, usada para representar un objeto de datos inmutable (como un usuario).
 data class User(
     val id: String,
     val email: String,
@@ -92,4 +119,4 @@ sealed class LoginState{
     data class Success(val user: User): LoginState()
     data class Error(val message: String): LoginState()
 
-}
+}}

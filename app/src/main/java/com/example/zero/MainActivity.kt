@@ -21,33 +21,19 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.zero.ui.theme.ZeroTheme
+
 import com.example.zero.views.auth.LoginScreen
+import com.example.zero.views.navigation.AppNavigation
 
 import com.example.zero.views.plant.MyPlantsScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
-            ZeroTheme {
-                val navController = rememberNavController()
-                NavHost(navController, startDestination = "login_screen") {
-                   composable("login_screen") {
-                        LoginScreen(navController)
-                    }
-                    /*
-                    composable("camera_screen") {
-                        CameraScreen()
-                    }
-                    **/
-                    composable("MyPlantsScreen"){
-                        MyPlantsScreen()
-                    }
-                }
-            }
+            AppNavigation()
         }
-    }
-
 
 }
+
+    }
