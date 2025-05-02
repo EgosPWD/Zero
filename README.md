@@ -18,7 +18,7 @@
 ## Introducción
 Zero es una aplicación móvil que revoluciona la forma en que cuidamos nuestras plantas. Mediante el uso de inteligencia artificial y datos meteorológicos en tiempo real, proporciona una experiencia personalizada para el cuidado de plantas.
 
-![Capturas de pantalla](assets/screenshots.png)
+![Capturas de pantalla](https://firebasestorage.googleapis.com/v0/b/zero-bc5b6.firebasestorage.app/o/ChatGPT%20Image%20May%202%2C%202025%2C%2006_24_02%20PM.png?alt=media&token=7000de99-d4b7-4e0f-bfca-20781d179c86)
 
 ## Sobre el Proyecto
 Zero nace de la necesidad de simplificar el cuidado de plantas para usuarios principiantes y expertos. La aplicación combina tecnología de reconocimiento de imágenes con datos meteorológicos para ofrecer recomendaciones precisas y personalizadas.
