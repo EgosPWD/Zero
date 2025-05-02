@@ -1,6 +1,6 @@
-# Zero - Tu Asistente de Jardinería 🌱
+# Viridis - Tu Asistente de Jardinería 🌱
 
-![Zero App Demo](assets/demo.gif)
+![Viridis App Demo](assets/demo.gif)
 
 ## Tabla de Contenidos
 - [Introducción](#introducción)
