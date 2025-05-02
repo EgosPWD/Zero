@@ -1,96 +1,140 @@
-Zero - Tu Asistente de Jardinería 🌱
-Zero App Demo
+# Zero - Tu Asistente de Jardinería 🌱
 
-Tabla de Contenidos
-Introducción
-Sobre el Proyecto
-Propósito
-Tecnologías
-Entorno de Desarrollo
-Estructura del Proyecto
-Características
-Instalación
-Uso
-Contribución
-Licencia
-Introducción
+![Zero App Demo](assets/demo.gif)
+
+## Tabla de Contenidos
+- [Introducción](#introducción)
+- [Sobre el Proyecto](#sobre-el-proyecto)
+- [Propósito](#propósito)
+- [Tecnologías](#tecnologías)
+- [Entorno de Desarrollo](#entorno-de-desarrollo)
+- [Estructura del Proyecto](#estructura-del-proyecto)
+- [Características](#características)
+- [Instalación](#instalación)
+- [Uso](#uso)
+- [Contribución](#contribución)
+- [Licencia](#licencia)
+
+## Introducción
 Zero es una aplicación móvil que revoluciona la forma en que cuidamos nuestras plantas. Mediante el uso de inteligencia artificial y datos meteorológicos en tiempo real, proporciona una experiencia personalizada para el cuidado de plantas.
 
-Capturas de pantalla
+![Capturas de pantalla](assets/screenshots.png)
 
-Sobre el Proyecto
+## Sobre el Proyecto
 Zero nace de la necesidad de simplificar el cuidado de plantas para usuarios principiantes y expertos. La aplicación combina tecnología de reconocimiento de imágenes con datos meteorológicos para ofrecer recomendaciones precisas y personalizadas.
 
-Propósito
-Facilitar la identificación de plantas
-Proporcionar consejos de cuidado personalizados
-Crear una comunidad de amantes de las plantas
-Hacer la jardinería más accesible para todos
-Tecnologías
-Frontend
-Kotlin 1.8.0
-Jetpack Compose
-Material Design 3
-Navigation Component
-Backend
-Firebase Authentication
-Cloud Firestore
-Room Database
-Retrofit 2.9.0
-APIs y Servicios
-OpenWeather API
-Plant.id API
-Firebase Cloud Messaging
-Entorno de Desarrollo
-Requisitos Previos
-Android Studio Arctic Fox o superior
-JDK 11+
-Android SDK 29+
-Git
-Configuración
-Android Studio
-JDK 11
-Android SDK
-Estructura del Proyecto
-Módulos Principales
-Authentication (views/auth/)
+## Propósito
+- Facilitar la identificación de plantas
+- Proporcionar consejos de cuidado personalizados basados en condiciones climáticas
+- Crear una comunidad de amantes de las plantas
+- Hacer la jardinería más accesible para todos
 
-Login y registro
-Gestión de sesiones
-Plant Recognition (views/plant/)
+## Tecnologías
+### Frontend
+- Kotlin 1.8.0
+- Jetpack Compose
+- Material Design 3
+- Navigation Component
 
-Cámara y galería
-Identificación de plantas
-Detalles y cuidados
-Community (views/social/)
+### Backend
+- Firebase Authentication
+- Cloud Firestore
+- Room Database
+- Retrofit 2.9.0
 
-Foro de discusión
-Compartir experiencias
-Consejos de expertos
-Sobre el Proyecto
-Características Implementadas
-<input checked="" disabled="" type="checkbox"> Autenticación de usuarios
-<input checked="" disabled="" type="checkbox"> Reconocimiento de plantas
-<input checked="" disabled="" type="checkbox"> Integración climática
-<input checked="" disabled="" type="checkbox"> Sistema de comunidad
-En Desarrollo
-<input disabled="" type="checkbox"> Modo offline
-<input disabled="" type="checkbox"> Gamificación
-<input disabled="" type="checkbox"> Recordatorios personalizados
-<input disabled="" type="checkbox"> Integración con sensores IoT
-Métricas del Proyecto
-Cobertura de pruebas: 85%
-Usuarios activos: 1000+
-Plantas reconocidas: 5000+
-Instalación y Uso
-Consulta nuestra guía de instalación para instrucciones detalladas.
+### APIs y Servicios
+- OpenWeather API
+- Plant.id API
+- Firebase Cloud Messaging
 
-Contribución
-Lee nuestra guía de contribución para más detalles.
+## Entorno de Desarrollo
+### Requisitos Previos
+- Android Studio Arctic Fox o superior
+- JDK 11+
+- Android SDK 29+
+- Git
 
-Licencia
-Este proyecto está bajo la Licencia MIT - ver el archivo LICENSE para detalles.
+### Configuración
+```bash
+# Instalar Android Studio
+sudo snap install android-studio --classic
 
+# Instalar JDK 11
+sudo apt install openjdk-11-jdk
+
+# Configurar Android SDK
+sdkmanager "platforms;android-29" "build-tools;30.0.3"
+```
+
+## Estructura del Proyecto
+```
+zero/
+├── app/
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/com/example/zero/
+│   │   │   │   ├── views/         # Interfaces de usuario
+│   │   │   │   │   ├── auth/      # Autenticación
+│   │   │   │   │   ├── plant/     # Gestión de plantas
+│   │   │   │   │   └── social/    # Comunidad
+│   │   │   │   ├── data/         # Capa de datos
+│   │   │   │   ├── domain/       # Lógica de negocio
+│   │   │   │   └── ml/           # Reconocimiento de plantas
+│   │   │   └── res/             # Recursos
+│   └── build.gradle.kts
+```
+
+## Características
+
+### Implementadas ✅
+- Autenticación de usuarios
+- Reconocimiento de plantas
+- Integración con datos climáticos
+- Sistema de comunidad y foro
+- Gestión de colección de plantas
+- Recomendaciones personalizadas
+
+### En Desarrollo 🚧
+- Modo offline
+- Gamificación
+- Recordatorios personalizados
+- Integración con sensores IoT
+
+## Instalación
+
+1. Clonar el repositorio
+```bash
+git clone https://github.com/tuusuario/Zero.git
+```
+
+2. Configurar Firebase:
+   - Crear proyecto en Firebase Console
+   - Añadir `google-services.json`
+   - Habilitar Authentication y Firestore
+
+3. Configurar APIs:
+   - Añadir clave de API del clima en `local.properties`
+   - Configurar API de reconocimiento de plantas
+
+4. Ejecutar la aplicación
+
+## Uso
+1. Registrarse o iniciar sesión
+2. Tomar foto de una planta o seleccionar de la galería
+3. Recibir identificación y recomendaciones
+4. Guardar en tu colección
+5. Participar en la comunidad
+
+## Contribución
+1. Fork del repositorio
+2. Crear rama para nueva función
+3. Commit y push de cambios
+4. Crear Pull Request
+
+## Licencia
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
+
+---
 Desarrollado con ❤️ por el equipo Zero
 
-⬆ Volver arriba
+[⬆ Volver arriba](#tabla-de-contenidos)
