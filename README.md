@@ -90,21 +90,22 @@ zero/
 - Autenticación de usuarios
 - Reconocimiento de plantas
 - Integración con datos climáticos
-- Sistema de comunidad y foro
-- Gestión de colección de plantas
-- Recomendaciones personalizadas
+
 
 ### En Desarrollo 🚧
 - Modo offline
 - Gamificación
 - Recordatorios personalizados
 - Integración con sensores IoT
-
+- Sistema de comunidad y foro
+- Gestión de colección de plantas
+- Recomendaciones personalizadas
+- 
 ## Instalación
 
 1. Clonar el repositorio
 ```bash
-git clone https://github.com/tuusuario/Zero.git
+git clone https://github.com/EgosPWD/Zero.git
 ```
 
 2. Configurar Firebase:
