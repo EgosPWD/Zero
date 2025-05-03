@@ -1,6 +1,6 @@
 # Viridis - Tu Asistente de Jardinería 🌱
 
-![Viridis App Demo](assets/demo.gif)
+![Viridis App Demo](https://drive.google.com/file/d/1W_Ty0POHUS7qWIYmyA85kkLY0IWFm4qT/view?usp=drivesdk)
 
 ## Tabla de Contenidos
 - [Introducción](#introducción)
