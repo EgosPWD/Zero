@@ -105,14 +105,12 @@ class LoginViewModel: ViewModel() {
         }
     }
 
-    //Es una data class en Kotlin, usada para representar un objeto de datos inmutable (como un usuario).
 data class User(
     val id: String,
     val email: String,
     val username: String
 )
 
-//Una clase sellada (sealed class) en Kotlin permite definir una jerarquía de clases que representan estados limitados y conocidos en el programa.
 sealed class LoginState{
     object Initial: LoginState()
     object Loading: LoginState()
