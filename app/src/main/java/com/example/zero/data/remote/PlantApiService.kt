@@ -10,7 +10,7 @@ import retrofit2.http.Part
 
 interface PlantApiService {
     @Multipart
-    @POST("identify/")
+    @POST("api/v1/identify/")
     suspend fun identifyPlant(
         @Part image: MultipartBody.Part,
         @Part organs: MultipartBody.Part
