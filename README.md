@@ -1,4 +1,4 @@
-# Viridis - Tu Asistente de Jardinería 🌱
+# PlantAI - Tu Asistente de Jardinería 🌱
 
 [![Demo Video](https://img.youtube.com/vi/1W_Ty0POHUS7qWIYmyA85kkLY0IWFm4qT/0.jpg)](https://drive.google.com/file/d/1W_Ty0POHUS7qWIYmyA85kkLY0IWFm4qT/view?usp=drivesdk)
 
