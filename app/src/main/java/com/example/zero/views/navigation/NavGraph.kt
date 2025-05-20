@@ -12,13 +12,14 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.zero.views.auth.LoginScreen
 import com.example.zero.views.camera.CameraScreen
 import com.example.zero.views.plant.MyPlantsScreen
+import com.example.zero.views.plant.AddPlantScreen
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
     // Aseguramos que el gráfico de navegación esté configurado antes de su uso
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val showBottomBar = currentRoute != "login_screen"
+    val showBottomBar = currentRoute != "login_screen" && currentRoute != "add_plant"
 
     Scaffold(
         bottomBar = {
@@ -40,6 +41,9 @@ fun AppNavGraph(navController: NavHostController) {
             }
             composable(BottomNavItem.Camera.route) {
                 CameraScreen()
+            }
+            composable("add_plant") {
+                AddPlantScreen(navController)
             }
         }
     }

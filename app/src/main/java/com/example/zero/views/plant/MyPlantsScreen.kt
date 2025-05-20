@@ -4,41 +4,45 @@ import WeatherResponse
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
 import androidx.navigation.NavController
 
 
 @Composable
-fun MyPlantsScreen(navController: NavController) {
-    val userId = FirebaseAuth.getInstance().currentUser?.uid
-
-    var plantList by remember { mutableStateOf(listOf<Map<String, Any>>()) }
-    var loading by remember { mutableStateOf(true) }
+fun MyPlantsScreen(
+    navController: NavController,
+    viewModel: PlantViewModel = viewModel()
+) {
+    val plantList by viewModel.plants.collectAsState()
+    val loading by viewModel.isLoading.collectAsState()
+    val shouldNavigateToAddPlant by viewModel.shouldNavigateToAddPlant.collectAsState()
     var weather by remember { mutableStateOf<WeatherResponse?>(null) }
 
     val apiKey = "2f06aaf89c0647c5844191401250205"
 
-    // Obtener plantas y clima al mismo tiempo
-    LaunchedEffect(userId) {
-        if (userId != null) {
-            val snapshot = FirebaseFirestore.getInstance()
-                .collection("users")
-                .document(userId)
-                .collection("plants")
-                .get()
-                .await()
-
-            plantList = snapshot.documents.map { it.data ?: emptyMap() }
-            loading = false
+    // Handle navigation to AddPlantScreen
+    LaunchedEffect(shouldNavigateToAddPlant) {
+        if (shouldNavigateToAddPlant) {
+            navController.navigate("add_plant")
+            viewModel.onAddPlantNavigated()
         }
+    }
 
+    // Refresh plant list when returning to this screen
+    LaunchedEffect(Unit) {
+        viewModel.loadPlants()
+    }
+
+    // Obtener plantas y clima al mismo tiempo
+    LaunchedEffect(Unit) {
         try {
             val weatherApi = WeatherApi.create()
             weather = weatherApi.getCurrentWeather(apiKey, "Tarija")
@@ -47,57 +51,128 @@ fun MyPlantsScreen(navController: NavController) {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Clima en tu ciudad", style = MaterialTheme.typography.titleLarge)
-        Spacer(modifier = Modifier.height(8.dp))
-
-        if (weather != null) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Column {
-                    Text("Ciudad: ${weather!!.location.name}", style = MaterialTheme.typography.bodyMedium)
-                    Text("Clima: ${weather!!.current.condition.text}", style = MaterialTheme.typography.bodyMedium)
-                    Text("Temp: ${weather!!.current.temp_c}°C", style = MaterialTheme.typography.bodyMedium)
-                }
-                AsyncImage(
-                    model = "https:${weather!!.current.condition.icon}",
-                    contentDescription = "Icono del clima",
-                    modifier = Modifier.size(64.dp)
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { viewModel.navigateToAddPlant() },
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = "Añadir planta",
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
-        } else {
-            Text("Cargando clima...")
         }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp)
+        ) {
+            Text(
+                "Clima en tu ciudad",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("Tus Plantas", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(8.dp))
 
-        if (loading) {
-            CircularProgressIndicator()
-        } else {
-            LazyColumn {
-                items(plantList) { plant ->
-                    val name = plant["name"] as? String ?: "Sin nombre"
-                    val description = plant["description"] as? String ?: "Sin descripción"
-                    val imageUrl = plant["imageUrl"] as? String
-
-                    Card(
+            if (weather != null) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                    )
+                ) {
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            if (imageUrl != null) {
-                                AsyncImage(
-                                    model = imageUrl,
-                                    contentDescription = name,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(200.dp)
+                        Column {
+                            Text(
+                                "Ciudad: ${weather!!.location.name}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                "Clima: ${weather!!.current.condition.text}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                "Temp: ${weather!!.current.temp_c}°C",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        AsyncImage(
+                            model = "https:${weather!!.current.condition.icon}",
+                            contentDescription = "Icono del clima",
+                            modifier = Modifier.size(64.dp)
+                        )
+                    }
+                }
+            } else {
+                Text(
+                    "Cargando clima...",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                "Tus Plantas",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.tertiary
+            )
+
+            if (loading) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            } else {
+                LazyColumn {
+                    items(plantList) { plant ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer
+                            )
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                if (plant.imageUrl.isNotEmpty()) {
+                                    AsyncImage(
+                                        model = plant.imageUrl,
+                                        contentDescription = plant.name,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(200.dp)
+                                    )
+                                }
+                                Text(
+                                    text = plant.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = plant.description,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                            Text(text = name, style = MaterialTheme.typography.titleMedium)
-                            Text(text = description, style = MaterialTheme.typography.bodyMedium)
                         }
                     }
                 }
