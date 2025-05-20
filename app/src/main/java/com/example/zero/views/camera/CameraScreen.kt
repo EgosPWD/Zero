@@ -9,13 +9,21 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -124,91 +132,167 @@ fun CameraScreen() {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
-        Box(
+        Column(
             modifier = Modifier
-                .size(200.dp)
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
-            contentAlignment = Alignment.Center
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (imageUri != null) {
-                AsyncImage(
-                    model = imageUri,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Text("Sin imagen", color = MaterialTheme.colorScheme.onSurface)
+            // Título de la sección
+            Text(
+                text = "Identificador de Plantas",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
+
+            // Previsualización de imagen más grande y con bordes redondeados
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(350.dp)
+                    .padding(horizontal = 12.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = MaterialTheme.shapes.large
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                if (imageUri != null) {
+                    AsyncImage(
+                        model = imageUri,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(4.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            "Sin imagen seleccionada",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Resultado de identificación mostrado antes de los botones
+            AnimatedVisibility(
+                visible = plantName != null || errorMessage != null,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .background(
+                            color = if (plantName != null) MaterialTheme.colorScheme.primaryContainer
+                                   else MaterialTheme.colorScheme.errorContainer,
+                            shape = MaterialTheme.shapes.medium
+                        )
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    when {
+                        plantName != null -> Text(
+                            "Planta Identificada: $plantName",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        errorMessage != null -> Text(
+                            "Error: $errorMessage",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+
+
+            // Botones en una fila para mejor accesibilidad
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ActionButton(
+                    text = "Cámara",
+                    onClick = {
+                        plantName = null
+                        errorMessage = null
+                        if (!hasCameraPermission) {
+                            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                        } else {
+                            launchCamera()
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+
+                ActionButton(
+                    text = "Galería",
+                    onClick = {
+                        plantName = null
+                        errorMessage = null
+                        if (!hasStoragePermission) {
+                            storagePermissionLauncher.launch(requiredStoragePermission)
+                        } else {
+                            galleryLauncher.launch("image/*")
+                        }
+                    },
+                    modifier = Modifier.weight(1f)                )
+
+            }
+
+            // Botón de identificación más grande y destacado
+            ActionButton(
+                text = if (isLoading) "Identificando..." else "Identificar Planta",
+                onClick = {
+                    imageUri?.let { uri ->
+                        isLoading = true
+                        plantName = null
+                        errorMessage = null
+                        coroutineScope.launch {
+                            identifyPlantFromUri(
+                                context = context,
+                                uri = uri,
+                                onSuccess = { plantName = it },
+                                onError = { errorMessage = it }
+                            )
+                            isLoading = false
+                        }
+                    } ?: Toast.makeText(context, "Selecciona una imagen primero", Toast.LENGTH_SHORT).show()
+                },
+                enabled = !isLoading && imageUri != null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp)
+            )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        ActionButton(
-            text = "Abrir Cámara",
-            onClick = {
-                plantName = null
-                errorMessage = null
-                if (!hasCameraPermission) {
-                    cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-                } else {
-                    launchCamera()
-                }
-            }
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        ActionButton(
-            text = "Seleccionar Imagen de la Galería",
-            onClick = {
-                plantName = null
-                errorMessage = null
-                if (!hasStoragePermission) {
-                    storagePermissionLauncher.launch(requiredStoragePermission)
-                } else {
-                    galleryLauncher.launch("image/*")
-                }
-            }
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        ActionButton(
-            text = if (isLoading) "Identificando..." else "Identificar Planta",
-            onClick = {
-                imageUri?.let { uri ->
-                    isLoading = true
-                    plantName = null
-                    errorMessage = null
-                    coroutineScope.launch {
-                        identifyPlantFromUri(
-                            context = context,
-                            uri = uri,
-                            onSuccess = { plantName = it },
-                            onError = { errorMessage = it }
-                        )
-                        isLoading = false
-                    }
-                } ?: Toast.makeText(context, "Selecciona una imagen primero", Toast.LENGTH_SHORT).show()
-            },
-            enabled = !isLoading && imageUri != null
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Box(modifier = Modifier.heightIn(min = 40.dp), contentAlignment = Alignment.Center) {
-            when {
-                plantName != null -> Text("Planta Identificada: $plantName", style = MaterialTheme.typography.titleMedium)
-                errorMessage != null -> Text("Error: $errorMessage", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
-            }
+        // Indicador de carga
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .size(60.dp)
+                    .align(Alignment.Center)
+            )
         }
     }
 }

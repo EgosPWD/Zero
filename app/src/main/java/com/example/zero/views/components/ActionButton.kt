@@ -7,10 +7,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-fun ActionButton(text: String, onClick: () -> Unit, enabled: Boolean = true) {
+fun ActionButton(
+    text: String,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier
+) {
     Button(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(0.8f),
+        modifier = modifier.fillMaxWidth(0.8f),
         enabled = enabled
     ) {
         Text(text)
