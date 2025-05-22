@@ -1,5 +1,6 @@
 package com.example.zero.data.remote
 
+import com.example.zero.data.remote.plant.PlantDiagnosisResponse
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import okhttp3.MultipartBody
@@ -15,6 +16,13 @@ interface PlantApiService {
         @Part image: MultipartBody.Part,
         @Part organs: MultipartBody.Part
     ): Response<PlantResponse>
+
+    @Multipart
+    @POST("api/v1/diagnose")
+    suspend fun diagnosePlant(
+        @Part image: MultipartBody.Part,
+        @Part organs: MultipartBody.Part
+    ): Response<PlantDiagnosisResponse>
 }
 
 @JsonClass(generateAdapter = true)
@@ -22,4 +30,3 @@ data class PlantResponse(
     @Json(name = "plant_name") val plantName: String?
 )
 
-//dfs

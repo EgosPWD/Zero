@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import com.example.zero.data.remote.RetrofitClient
+import com.example.zero.data.remote.plant.PlantDiagnosisResponse
 import kotlinx.coroutines.launch
 import java.util.*
 import com.example.zero.utils.CameraUtils.createImageUri
@@ -69,6 +70,9 @@ fun CameraScreen() {
     var plantName by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var diagnosisResult by remember { mutableStateOf<PlantDiagnosisResponse?>(null) }
+    var isDiagnosing by remember { mutableStateOf(false) }
+    var showDiagnosis by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     val galleryLauncher = rememberLauncherForActivityResult(
@@ -81,6 +85,8 @@ fun CameraScreen() {
             imageUri = uri
             plantName = null
             errorMessage = null
+            diagnosisResult = null
+            showDiagnosis = false
         }
     }
 
@@ -111,6 +117,8 @@ fun CameraScreen() {
             imageUri = lastPhotoUri
             plantName = null
             errorMessage = null
+            diagnosisResult = null
+            showDiagnosis = false
         } else {
             lastPhotoUri = null
             imageUri = null
@@ -186,43 +194,137 @@ fun CameraScreen() {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Resultado de identificación mostrado antes de los botones
-            AnimatedVisibility(
-                visible = plantName != null || errorMessage != null,
-                enter = fadeIn() + expandVertically(),
-                exit = fadeOut() + shrinkVertically()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .background(
-                            color = if (plantName != null) MaterialTheme.colorScheme.primaryContainer
-                                   else MaterialTheme.colorScheme.errorContainer,
-                            shape = MaterialTheme.shapes.medium
-                        )
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
+            // Mostrar resultado de identificación o diagnóstico
+            if (!showDiagnosis) {
+                // Resultado de identificación
+                AnimatedVisibility(
+                    visible = plantName != null || errorMessage != null,
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically()
                 ) {
-                    when {
-                        plantName != null -> Text(
-                            "Planta Identificada: $plantName",
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .background(
+                                color = if (plantName != null) MaterialTheme.colorScheme.primaryContainer
+                                       else MaterialTheme.colorScheme.errorContainer,
+                                shape = MaterialTheme.shapes.medium
+                            )
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        when {
+                            plantName != null -> Text(
+                                "Planta Identificada: $plantName",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            errorMessage != null -> Text(
+                                "Error: $errorMessage",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                    }
+                }
+            } else {
+                // Resultado del diagnóstico
+                diagnosisResult?.let { diagnosis ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .background(
+                                color = if (diagnosis.salud.esSaludable)
+                                    MaterialTheme.colorScheme.primaryContainer
+                                else
+                                    MaterialTheme.colorScheme.errorContainer,
+                                shape = MaterialTheme.shapes.medium
+                            )
+                            .padding(16.dp),
+                    ) {
+                        // Estado de salud
+                        Text(
+                            text = if (diagnosis.salud.esSaludable)
+                                   "¡Planta Saludable!"
+                                   else "Planta con posibles problemas",
                             style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            color = if (diagnosis.salud.esSaludable)
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            else
+                                MaterialTheme.colorScheme.onErrorContainer
                         )
-                        errorMessage != null -> Text(
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "Probabilidad de salud: ${diagnosis.salud.probabilidad}%",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (diagnosis.salud.esSaludable)
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            else
+                                MaterialTheme.colorScheme.onErrorContainer
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Posibles problemas
+                        if (diagnosis.enfermedades.isNotEmpty()) {
+                            Text(
+                                text = "Posibles problemas:",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = if (diagnosis.salud.esSaludable)
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                else
+                                    MaterialTheme.colorScheme.onErrorContainer
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            diagnosis.enfermedades.take(3).forEach { enfermedad ->
+                                Text(
+                                    text = "• ${enfermedad.name} (${enfermedad.probability}%)",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = if (diagnosis.salud.esSaludable)
+                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                    else
+                                        MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Error en diagnóstico
+                AnimatedVisibility(
+                    visible = errorMessage != null && showDiagnosis,
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.errorContainer,
+                                shape = MaterialTheme.shapes.medium
+                            )
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
                             "Error: $errorMessage",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onErrorContainer
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(24.dp))
             }
 
+            Spacer(modifier = Modifier.height(24.dp))
+
             Spacer(modifier = Modifier.weight(1f))
-
-
 
             // Botones en una fila para mejor accesibilidad
             Row(
@@ -236,6 +338,8 @@ fun CameraScreen() {
                     onClick = {
                         plantName = null
                         errorMessage = null
+                        diagnosisResult = null
+                        showDiagnosis = false
                         if (!hasCameraPermission) {
                             cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                         } else {
@@ -250,44 +354,104 @@ fun CameraScreen() {
                     onClick = {
                         plantName = null
                         errorMessage = null
+                        diagnosisResult = null
+                        showDiagnosis = false
                         if (!hasStoragePermission) {
                             storagePermissionLauncher.launch(requiredStoragePermission)
                         } else {
                             galleryLauncher.launch("image/*")
                         }
                     },
-                    modifier = Modifier.weight(1f)                )
+                    modifier = Modifier.weight(1f)
+                )
 
             }
 
-            // Botón de identificación más grande y destacado
-            ActionButton(
-                text = if (isLoading) "Identificando..." else "Identificar Planta",
-                onClick = {
-                    imageUri?.let { uri ->
-                        isLoading = true
-                        plantName = null
-                        errorMessage = null
-                        coroutineScope.launch {
-                            identifyPlantFromUri(
-                                context = context,
-                                uri = uri,
-                                onSuccess = { plantName = it },
-                                onError = { errorMessage = it }
-                            )
-                            isLoading = false
-                        }
-                    } ?: Toast.makeText(context, "Selecciona una imagen primero", Toast.LENGTH_SHORT).show()
-                },
-                enabled = !isLoading && imageUri != null,
+            // Botones de identificación y diagnóstico
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp)
-            )
+                    .padding(bottom = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Botón de identificación
+                ActionButton(
+                    text = if (isLoading) "Identificando..." else "Identificar",
+                    onClick = {
+                        imageUri?.let { uri ->
+                            isLoading = true
+                            plantName = null
+                            errorMessage = null
+                            diagnosisResult = null
+                            showDiagnosis = false
+                            coroutineScope.launch {
+                                identifyPlantFromUri(
+                                    context = context,
+                                    uri = uri,
+                                    onSuccess = { plantName = it },
+                                    onError = { errorMessage = it }
+                                )
+                                isLoading = false
+                            }
+                        } ?: Toast.makeText(context, "Selecciona una imagen primero", Toast.LENGTH_SHORT).show()
+                    },
+                    enabled = !isLoading && !isDiagnosing && imageUri != null,
+                    modifier = Modifier.weight(1f)
+                )
+
+                // Botón de diagnóstico
+                ActionButton(
+                    text = if (isDiagnosing) "Diagnosticando..." else "Diagnosticar",
+                    onClick = {
+                        imageUri?.let { uri ->
+                            isDiagnosing = true
+                            diagnosisResult = null
+                            errorMessage = null
+                            showDiagnosis = true
+                            coroutineScope.launch {
+                                try {
+                                    val tempFile = getFileFromUri(context, uri)
+                                    if (tempFile == null || !tempFile.exists() || tempFile.length() == 0L) {
+                                        errorMessage = "Error al procesar el archivo de imagen."
+                                        return@launch
+                                    }
+
+                                    val requestFile = tempFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
+                                    // Cambiando el nombre del parámetro a "file" en lugar de "image" según el API y añadiendo un content-type
+                                    val imagePart = MultipartBody.Part.createFormData("file", tempFile.name, requestFile)
+
+                                    // El backend espera "organs" como campo pero ahora usamos "auto" como valor
+                                    val response = RetrofitClient.api.diagnosePlant(
+                                        imagePart,
+                                        MultipartBody.Part.createFormData("organs", "auto")
+                                    )
+
+                                    if (response.isSuccessful) {
+                                        diagnosisResult = response.body()
+                                        if (diagnosisResult == null) {
+                                            errorMessage = "No se pudo obtener un diagnóstico"
+                                        }
+                                    } else {
+                                        Log.e(TAG, "Error en diagnóstico: ${response.code()} - ${response.errorBody()?.string()}")
+                                        errorMessage = "Error del servidor (${response.code()})"
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Excepción en diagnóstico: ${e.message}", e)
+                                    errorMessage = "Error: ${e.localizedMessage}"
+                                } finally {
+                                    isDiagnosing = false
+                                }
+                            }
+                        } ?: Toast.makeText(context, "Selecciona una imagen primero", Toast.LENGTH_SHORT).show()
+                    },
+                    enabled = !isLoading && !isDiagnosing && imageUri != null,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
 
         // Indicador de carga
-        if (isLoading) {
+        if (isLoading || isDiagnosing) {
             CircularProgressIndicator(
                 modifier = Modifier
                     .size(60.dp)
