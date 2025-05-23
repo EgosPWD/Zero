@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import androidx.navigation.NavController
+import com.example.zero.domain.Plant
 
 
 @Composable
@@ -24,7 +26,10 @@ fun MyPlantsScreen(
     val plantList by viewModel.plants.collectAsState()
     val loading by viewModel.isLoading.collectAsState()
     val shouldNavigateToAddPlant by viewModel.shouldNavigateToAddPlant.collectAsState()
+    val deletionStatus by viewModel.deletionStatus.collectAsState()
     var weather by remember { mutableStateOf<WeatherResponse?>(null) }
+    var plantToDelete by remember { mutableStateOf<Plant?>(null) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     val apiKey = "2f06aaf89c0647c5844191401250205"
 
@@ -51,6 +56,55 @@ fun MyPlantsScreen(
         }
     }
 
+    // Mostrar Snackbar cuando se completa una eliminación
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(deletionStatus) {
+        when (deletionStatus) {
+            is DeletionStatus.Success -> {
+                snackbarHostState.showSnackbar("Planta eliminada con éxito")
+                viewModel.resetDeletionStatus()
+            }
+            is DeletionStatus.Error -> {
+                snackbarHostState.showSnackbar("Error: ${(deletionStatus as DeletionStatus.Error).message}")
+                viewModel.resetDeletionStatus()
+            }
+            else -> {}
+        }
+    }
+
+    // Diálogo de confirmación de eliminación
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("¿Eliminar planta?") },
+            text = { Text("¿Estás seguro que deseas eliminar esta planta? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        plantToDelete?.id?.let {
+                            viewModel.deletePlant(it)
+                        }
+                        showDeleteDialog = false
+                        plantToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Eliminar")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        plantToDelete = null
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -63,7 +117,8 @@ fun MyPlantsScreen(
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -162,11 +217,29 @@ fun MyPlantsScreen(
                                             .height(200.dp)
                                     )
                                 }
-                                Text(
-                                    text = plant.name,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = plant.name,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    IconButton(
+                                        onClick = {
+                                            plantToDelete = plant
+                                            showDeleteDialog = true
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Eliminar planta",
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                }
                                 Text(
                                     text = plant.description,
                                     style = MaterialTheme.typography.bodyMedium,

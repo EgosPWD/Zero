@@ -27,7 +27,20 @@ class PlantRepository (
             .get()
             .await()
 
-        return snapshot.documents.mapNotNull { it.toObject(Plant::class.java) }
+        return snapshot.documents.mapNotNull {
+            it.toObject(Plant::class.java)?.apply {
+                id = it.id // Aseguramos que el id se asigne al objeto Plant
+            }
+        }
     }
 
+    suspend fun deletePlant(plantId: String) {
+        val userId = auth.currentUser?.uid ?: throw IllegalStateException("Usuario no autenticado")
+        firestore.collection("users")
+            .document(userId)
+            .collection("plants")
+            .document(plantId)
+            .delete()
+            .await()
+    }
 }
